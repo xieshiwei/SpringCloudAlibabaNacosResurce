@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.alibaba.nacos.naming;
 
 import org.springframework.boot.SpringApplication;
@@ -21,14 +20,14 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
- * Nacos naming starter.
+ * Hello world!
  *
  * @author xxc
  */
 @EnableScheduling
-@SpringBootApplication(scanBasePackages = {"com.alibaba.nacos.naming", "com.alibaba.nacos.core"})
+@SpringBootApplication
 public class NamingApp {
-    
+
     public static void main(String[] args) {
         SpringApplication.run(NamingApp.class, args);
     }

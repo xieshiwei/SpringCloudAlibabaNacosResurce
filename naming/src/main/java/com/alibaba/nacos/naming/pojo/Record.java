@@ -13,21 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.alibaba.nacos.naming.pojo;
 
-import java.io.Serializable;
-
 /**
- * Record to transfer and store in Nacos cluster.
+ * Record to transfer and store in Nacos cluster
  *
  * @author nkorange
  * @since 1.0.0
  */
-public interface Record extends Serializable {
-    
+public interface Record {
     /**
-     * get the checksum of this record, usually for record comparison.
+     * get the checksum of this record, usually for record comparison
      *
      * @return checksum of record
      */

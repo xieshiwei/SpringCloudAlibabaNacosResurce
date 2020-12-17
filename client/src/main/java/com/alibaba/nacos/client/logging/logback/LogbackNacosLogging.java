@@ -13,14 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.alibaba.nacos.client.logging.logback;
 
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.util.ContextInitializer;
 import com.alibaba.nacos.client.logging.AbstractNacosLogging;
-import com.alibaba.nacos.common.utils.ResourceUtils;
-import com.alibaba.nacos.common.utils.StringUtils;
+import com.alibaba.nacos.common.util.ResourceUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.impl.StaticLoggerBinder;
 
 /**
@@ -30,22 +29,22 @@ import org.slf4j.impl.StaticLoggerBinder;
  * @since 0.9.0
  */
 public class LogbackNacosLogging extends AbstractNacosLogging {
-    
+
     private static final String NACOS_LOGBACK_LOCATION = "classpath:nacos-logback.xml";
-    
+
     @Override
     public void loadConfiguration() {
         String location = getLocation(NACOS_LOGBACK_LOCATION);
         if (StringUtils.isBlank(location)) {
             return;
         }
-        
+
         try {
-            LoggerContext loggerContext = (LoggerContext) StaticLoggerBinder.getSingleton().getLoggerFactory();
-            new ContextInitializer(loggerContext).configureByResource(ResourceUtils.getResourceUrl(location));
+            LoggerContext loggerContext = (LoggerContext)StaticLoggerBinder.getSingleton().getLoggerFactory();
+            new ContextInitializer(loggerContext).configureByResource(ResourceUtils.getResourceURL(location));
         } catch (Exception e) {
             throw new IllegalStateException("Could not initialize Logback Nacos logging from " + location, e);
         }
     }
-    
+
 }

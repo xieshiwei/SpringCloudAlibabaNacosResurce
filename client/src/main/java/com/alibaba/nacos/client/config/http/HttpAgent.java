@@ -13,96 +13,85 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.alibaba.nacos.client.config.http;
 
 import com.alibaba.nacos.api.exception.NacosException;
-import com.alibaba.nacos.common.http.HttpRestResult;
-import com.alibaba.nacos.common.lifecycle.Closeable;
+import com.alibaba.nacos.client.config.impl.HttpSimpleClient.HttpResult;
 
-import java.util.Map;
+import java.io.IOException;
+import java.util.List;
+
 
 /**
- * HttpAgent.
+ * HttpAgent
  *
  * @author Nacos
  */
-public interface HttpAgent extends Closeable {
-    
+public interface HttpAgent {
     /**
-     * start to get nacos ip list.
-     *
+     * start to get nacos ip list
+     * @return Nothing.
      * @throws NacosException on get ip list error.
      */
     void start() throws NacosException;
-    
+
     /**
-     * invoke http get method.
-     *
-     * @param path          http path
-     * @param headers       http headers
-     * @param paramValues   http paramValues http
-     * @param encoding      http encode
+     * invoke http get method
+     * @param path http path
+     * @param headers http headers
+     * @param paramValues http paramValues http
+     * @param encoding http encode
      * @param readTimeoutMs http timeout
      * @return HttpResult http response
-     * @throws Exception If an input or output exception occurred
+     * @throws IOException If an input or output exception occurred
      */
-    
-    HttpRestResult<String> httpGet(String path, Map<String, String> headers, Map<String, String> paramValues,
-            String encoding, long readTimeoutMs) throws Exception;
-    
+
+    HttpResult httpGet(String path, List<String> headers, List<String> paramValues, String encoding, long readTimeoutMs) throws IOException;
+
     /**
-     * invoke http post method.
-     *
-     * @param path          http path
-     * @param headers       http headers
-     * @param paramValues   http paramValues http
-     * @param encoding      http encode
+     * invoke http post method
+     * @param path http path
+     * @param headers http headers
+     * @param paramValues http paramValues http
+     * @param encoding http encode
      * @param readTimeoutMs http timeout
      * @return HttpResult http response
-     * @throws Exception If an input or output exception occurred
+     * @throws IOException If an input or output exception occurred
      */
-    HttpRestResult<String> httpPost(String path, Map<String, String> headers, Map<String, String> paramValues,
-            String encoding, long readTimeoutMs) throws Exception;
-    
+    HttpResult httpPost(String path, List<String> headers, List<String> paramValues, String encoding, long readTimeoutMs) throws IOException;
+
     /**
-     * invoke http delete method.
-     *
-     * @param path          http path
-     * @param headers       http headers
-     * @param paramValues   http paramValues http
-     * @param encoding      http encode
+     * invoke http delete method
+     * @param path http path
+     * @param headers http headers
+     * @param paramValues http paramValues http
+     * @param encoding http encode
      * @param readTimeoutMs http timeout
      * @return HttpResult http response
-     * @throws Exception If an input or output exception occurred
+     * @throws IOException If an input or output exception occurred
      */
-    HttpRestResult<String> httpDelete(String path, Map<String, String> headers, Map<String, String> paramValues,
-            String encoding, long readTimeoutMs) throws Exception;
-    
+    HttpResult httpDelete(String path, List<String> headers, List<String> paramValues, String encoding, long readTimeoutMs) throws IOException;
+
     /**
-     * get name.
-     *
+     * get name
      * @return String
      */
     String getName();
-    
+
     /**
-     * get namespace.
-     *
+     * get namespace
      * @return String
      */
     String getNamespace();
-    
+
     /**
-     * get tenant.
-     *
+     * get tenant
      * @return String
      */
     String getTenant();
-    
+
     /**
-     * get encode.
-     *
+     * get encode
      * @return String
      */
     String getEncode();

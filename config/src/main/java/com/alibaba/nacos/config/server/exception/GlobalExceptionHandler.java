@@ -13,58 +13,68 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.alibaba.nacos.config.server.exception;
 
 import com.alibaba.nacos.api.exception.NacosException;
-import com.alibaba.nacos.common.utils.ExceptionUtil;
 import com.alibaba.nacos.config.server.monitor.MetricsMonitor;
 import org.springframework.dao.DataAccessException;
-import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 /**
- * Global exception handler.
+ * global exception handler
  *
  * @author Nacos
  */
 @ControllerAdvice
 public class GlobalExceptionHandler {
-    
+
     /**
      * For IllegalArgumentException, we are returning void with status code as 400, so our error-page will be used in
      * this case.
      *
-     * @throws IllegalArgumentException IllegalArgumentException.
+     * @throws IllegalArgumentException
      */
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<String> handleIllegalArgumentException(Exception ex) throws IOException {
+    public void handleIllegalArgumentException(HttpServletResponse response, Exception ex) throws IOException {
         MetricsMonitor.getIllegalArgumentException().increment();
-        return ResponseEntity.status(400).body(ExceptionUtil.getAllExceptionMsg(ex));
+        response.setStatus(400);
+        if (ex.getMessage() != null) {
+            response.getWriter().println(ex.getMessage());
+        } else {
+            response.getWriter().println("invalid param");
+        }
     }
-    
+
     /**
-     * For NacosException.
+     * For NacosException
      *
-     * @throws NacosException NacosException.
+     * @throws NacosException
      */
     @ExceptionHandler(NacosException.class)
-    public ResponseEntity<String> handleNacosException(NacosException ex) throws IOException {
+    public void handleNacosException(HttpServletResponse response, NacosException ex) throws IOException {
         MetricsMonitor.getNacosException().increment();
-        return ResponseEntity.status(ex.getErrCode()).body(ExceptionUtil.getAllExceptionMsg(ex));
+        response.setStatus(ex.getErrCode());
+        if (ex.getErrMsg() != null) {
+            response.getWriter().println(ex.getErrMsg());
+        } else {
+            response.getWriter().println("unknown exception");
+        }
     }
-    
+
     /**
-     * For DataAccessException.
+     * For DataAccessException
      *
-     * @throws DataAccessException DataAccessException.
+     * @throws DataAccessException
      */
     @ExceptionHandler(DataAccessException.class)
-    public ResponseEntity<String> handleDataAccessException(DataAccessException ex) throws DataAccessException {
+    public void handleDataAccessException(HttpServletResponse response, DataAccessException ex) throws DataAccessException {
         MetricsMonitor.getDbException().increment();
-        return ResponseEntity.status(500).body(ExceptionUtil.getAllExceptionMsg(ex));
+        throw new CannotGetJdbcConnectionException(ex.getMessage());
     }
+
 }

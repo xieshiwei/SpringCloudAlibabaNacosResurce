@@ -13,45 +13,51 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.alibaba.nacos.config.server.utils;
 
-import com.alibaba.nacos.common.executor.ExecutorFactory;
-import com.alibaba.nacos.common.executor.NameThreadFactory;
-import com.alibaba.nacos.config.server.Config;
-import com.alibaba.nacos.core.utils.ClassUtils;
-
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * According to IP flow control, control the number of individual IP and IP total.
+ * 根据IP进行流控, 控制单个IP的数量以及IP总量
  *
  * @author leiwen.zh
  */
-public class SimpleIpFlowData {
-    
+@SuppressWarnings("PMD.ClassNamingShouldBeCamelRule")
+public class SimpleIPFlowData {
+
     private AtomicInteger[] data;
-    
+
     private int slotCount;
-    
+
     private int averageCount;
-    
-    private ScheduledExecutorService timer = ExecutorFactory.Managed
-            .newSingleScheduledExecutorService(ClassUtils.getCanonicalName(Config.class),
-                    new NameThreadFactory("com.alibaba.nacos.config.flow.control.ip"));
-    
-    class DefaultIpFlowDataManagerTask implements Runnable {
-        
+
+    @SuppressWarnings("PMD.ThreadPoolCreationRule")
+    private ScheduledExecutorService timer = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
+
+        @Override
+        public Thread newThread(Runnable r) {
+            Thread t = new Thread(r);
+            t.setName("nacos ip flow control thread");
+            t.setDaemon(true);
+            return t;
+        }
+
+    });
+
+    class DefaultIPFlowDataManagerTask implements Runnable {
+
         @Override
         public void run() {
             rotateSlot();
         }
-        
+
     }
-    
-    public SimpleIpFlowData(int slotCount, int interval) {
+
+    public SimpleIPFlowData(int slotCount, int interval) {
         if (slotCount <= 0) {
             this.slotCount = 1;
         } else {
@@ -61,12 +67,9 @@ public class SimpleIpFlowData {
         for (int i = 0; i < data.length; i++) {
             data[i] = new AtomicInteger(0);
         }
-        timer.scheduleAtFixedRate(new DefaultIpFlowDataManagerTask(), interval, interval, TimeUnit.MILLISECONDS);
+        timer.scheduleAtFixedRate(new DefaultIPFlowDataManagerTask(), interval, interval, TimeUnit.MILLISECONDS);
     }
-    
-    /**
-     * Atomically increments by one the current value.
-     */
+
     public int incrementAndGet(String ip) {
         int index = 0;
         if (ip != null) {
@@ -77,10 +80,7 @@ public class SimpleIpFlowData {
         }
         return data[index].incrementAndGet();
     }
-    
-    /**
-     * Rotate the slot.
-     */
+
     public void rotateSlot() {
         int totalCount = 0;
         for (int i = 0; i < slotCount; i++) {
@@ -89,7 +89,7 @@ public class SimpleIpFlowData {
         }
         this.averageCount = totalCount / this.slotCount;
     }
-    
+
     public int getCurrentCount(String ip) {
         int index = 0;
         if (ip != null) {
@@ -100,7 +100,7 @@ public class SimpleIpFlowData {
         }
         return data[index].get();
     }
-    
+
     public int getAverageCount() {
         return this.averageCount;
     }

@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.alibaba.nacos.api.selector;
 
 /**
@@ -23,20 +22,20 @@ package com.alibaba.nacos.api.selector;
  * @since 0.7.0
  */
 public class ExpressionSelector extends AbstractSelector {
-    
+
     /**
      * Label expression of this selector.
      */
     private String expression;
-    
+
     public ExpressionSelector() {
-        super(SelectorType.label.name());
+        this.setType(SelectorType.label.name());
     }
-    
+
     public String getExpression() {
         return expression;
     }
-    
+
     public void setExpression(String expression) {
         this.expression = expression;
     }

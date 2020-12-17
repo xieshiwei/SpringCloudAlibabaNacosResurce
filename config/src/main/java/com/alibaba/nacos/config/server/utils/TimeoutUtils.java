@@ -13,47 +13,41 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.alibaba.nacos.config.server.utils;
 
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * A utility class that handles timeouts and is used by the client to retrieve the total timeout of the data. After
- * obtaining the data from the network,totalTime is accumulated. Before obtaining the data from the network, check
- * whether the totalTime is greater than totalTimeout. If yes, it indicates the totalTimeout
+ * 处理超时的工具类, 用于客户端获取数据的总体超时。 每次从网络获取完数据后, 累计totalTime, 每次从网络获取数据前, 检查totalTime是否大于totalTimeout, 是则说明总体超时,
+ * totalTime有失效时间, 每次从网络获取数据前, 检查是否失效, 失效则重置totalTime, 重新开始累计
  *
  * @author leiwen.zh
  */
 public class TimeoutUtils {
-    
+
     /**
-     * Total time to get the data of consumption, the unit of ms.
+     * 累计的获取数据消耗的时间, 单位ms
      */
     private final AtomicLong totalTime = new AtomicLong(0L);
-    
+
     private volatile long lastResetTime;
-    
+
     private volatile boolean initialized = false;
-    
+
     /**
-     * Total timeout to get data, the unit of ms.
+     * 获取数据的总体超时, 单位ms
      */
     private long totalTimeout;
-    
     /**
-     * The cumulative expiration time of the time consumed by fetching the data, the unit of ms.
+     * 累计的获取数据消耗的时间的过期时间, 单位ms
      */
     private long invalidThreshold;
-    
+
     public TimeoutUtils(long totalTimeout, long invalidThreshold) {
         this.totalTimeout = totalTimeout;
         this.invalidThreshold = invalidThreshold;
     }
-    
-    /**
-     * Init last reset time.
-     */
+
     public synchronized void initLastResetTime() {
         if (initialized) {
             return;
@@ -61,23 +55,27 @@ public class TimeoutUtils {
         lastResetTime = System.currentTimeMillis();
         initialized = true;
     }
-    
+
     /**
-     * Cumulative total time.
+     * 累计总的时间
+     *
+     * @param time
      */
     public void addTotalTime(long time) {
         totalTime.addAndGet(time);
     }
-    
+
     /**
-     * Is timeout.
+     * 判断是否超时
+     *
+     * @return
      */
     public boolean isTimeout() {
         return totalTime.get() > this.totalTimeout;
     }
-    
+
     /**
-     * Clean the total time.
+     * 总的时间清零
      */
     public void resetTotalTime() {
         if (isTotalTimeExpired()) {
@@ -85,11 +83,11 @@ public class TimeoutUtils {
             lastResetTime = System.currentTimeMillis();
         }
     }
-    
+
     public AtomicLong getTotalTime() {
         return totalTime;
     }
-    
+
     private boolean isTotalTimeExpired() {
         return System.currentTimeMillis() - lastResetTime > this.invalidThreshold;
     }

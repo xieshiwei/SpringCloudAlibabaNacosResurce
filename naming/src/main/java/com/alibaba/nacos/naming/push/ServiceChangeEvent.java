@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2018 Alibaba Group Holding Ltd.
+ * Copyright (C) 2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,27 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.alibaba.nacos.naming.push;
 
 import com.alibaba.nacos.naming.core.Service;
 import org.springframework.context.ApplicationEvent;
 
 /**
- * Service change event.
- *
  * @author pbting
  * @date 2019-07-10 5:41 PM
  */
 public class ServiceChangeEvent extends ApplicationEvent {
-    
+
     private Service service;
-    
+
     public ServiceChangeEvent(Object source, Service service) {
         super(source);
         this.service = service;
     }
-    
+
     public Service getService() {
         return service;
     }

@@ -13,34 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.alibaba.nacos.client.config.utils;
 
 import com.alibaba.nacos.client.utils.LogUtils;
 import org.slf4j.Logger;
 
 /**
- * Get jvm config.
+ * Get jvm config
  *
  * @author Nacos
  */
-public class JvmUtil {
-    
+@SuppressWarnings("PMD.ClassNamingShouldBeCamelRule")
+public class JVMUtil {
+
     /**
-     * whether is multi instance.
+     * whether is multi instance
      *
      * @return whether multi
      */
     public static Boolean isMultiInstance() {
         return isMultiInstance;
     }
-    
+
     private static Boolean isMultiInstance = false;
-    
     private static final String TRUE = "true";
-    
-    private static final Logger LOGGER = LogUtils.logger(JvmUtil.class);
-    
+    private static final Logger LOGGER = LogUtils.logger(JVMUtil.class);
+
     static {
         String multiDeploy = System.getProperty("isMultiInstance", "false");
         if (TRUE.equals(multiDeploy)) {

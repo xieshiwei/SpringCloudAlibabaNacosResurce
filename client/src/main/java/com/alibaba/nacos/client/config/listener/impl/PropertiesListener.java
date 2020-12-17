@@ -13,12 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.alibaba.nacos.client.config.listener.impl;
 
 import com.alibaba.nacos.api.config.listener.AbstractListener;
 import com.alibaba.nacos.client.utils.LogUtils;
-import com.alibaba.nacos.common.utils.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 
 import java.io.IOException;
@@ -26,21 +25,21 @@ import java.io.StringReader;
 import java.util.Properties;
 
 /**
- * Properties Listener.
+ * Properties Listener
  *
  * @author Nacos
  */
 @SuppressWarnings("PMD.AbstractClassShouldStartWithAbstractNamingRule")
 public abstract class PropertiesListener extends AbstractListener {
-    
+
     private static final Logger LOGGER = LogUtils.logger(PropertiesListener.class);
-    
+
     @Override
     public void receiveConfigInfo(String configInfo) {
         if (StringUtils.isEmpty(configInfo)) {
             return;
         }
-        
+
         Properties properties = new Properties();
         try {
             properties.load(new StringReader(configInfo));
@@ -48,14 +47,14 @@ public abstract class PropertiesListener extends AbstractListener {
         } catch (IOException e) {
             LOGGER.error("load properties error：" + configInfo, e);
         }
-        
+
     }
-    
+
     /**
-     * properties type for receiver.
+     * properties type for receiver
      *
      * @param properties properties
      */
     public abstract void innerReceive(Properties properties);
-    
+
 }

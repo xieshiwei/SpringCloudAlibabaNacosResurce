@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.alibaba.nacos.config.server.service;
 
 import com.alibaba.nacos.config.server.utils.GroupKey2;
@@ -27,32 +26,32 @@ import org.springframework.test.context.web.WebAppConfiguration;
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
 public class ClientTrackServiceTest {
-    
+
     @Before
     public void before() {
         ClientTrackService.clientRecords.clear();
     }
-    
+
     @Test
-    public void testTrackClientMd5() {
+    public void test_trackClientMd5() {
         String clientIp = "1.1.1.1";
         String dataId = "com.taobao.session.xml";
         String group = "online";
         String groupKey = GroupKey2.getKey(dataId, group);
         String md5 = "xxxxxxxxxxxxx";
-        
-        ConfigCacheService.updateMd5(groupKey, md5, System.currentTimeMillis());
-        
+
+        ConfigService.updateMd5(groupKey, md5, System.currentTimeMillis());
+
         ClientTrackService.trackClientMd5(clientIp, groupKey, md5);
         ClientTrackService.trackClientMd5(clientIp, groupKey, md5);
-        
+
         Assert.assertEquals(true, ClientTrackService.isClientUptodate(clientIp).get(groupKey));
         Assert.assertEquals(1, ClientTrackService.subscribeClientCount());
         Assert.assertEquals(1, ClientTrackService.subscriberCount());
-        
+
         //服务端数据更新
-        ConfigCacheService.updateMd5(groupKey, md5 + "111", System.currentTimeMillis());
+        ConfigService.updateMd5(groupKey, md5 + "111", System.currentTimeMillis());
         Assert.assertEquals(false, ClientTrackService.isClientUptodate(clientIp).get(groupKey));
     }
-    
+
 }

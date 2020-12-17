@@ -13,38 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.alibaba.nacos.config.server.model;
 
-import java.io.Serializable;
 import java.util.List;
 
 /**
- * Acl info.
+ * acl info
  *
  * @author Nacos
  */
 @SuppressWarnings("PMD.ClassNamingShouldBeCamelRule")
-public class AclInfo implements Serializable {
-    
-    private static final long serialVersionUID = 1383026926036269457L;
-    
+public class ACLInfo {
+
     private Boolean isOpen;
-    
     private List<String> ips;
-    
+
     public List<String> getIps() {
         return ips;
     }
-    
+
     public void setIps(List<String> ips) {
         this.ips = ips;
     }
-    
+
     public Boolean getIsOpen() {
         return isOpen;
     }
-    
+
     public void setIsOpen(Boolean isOpen) {
         this.isOpen = isOpen;
     }

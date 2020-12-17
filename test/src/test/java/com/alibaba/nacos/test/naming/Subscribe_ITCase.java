@@ -15,17 +15,15 @@
  */
 package com.alibaba.nacos.test.naming;
 
-import com.alibaba.nacos.Nacos;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.alibaba.nacos.api.naming.NamingFactory;
 import com.alibaba.nacos.api.naming.NamingService;
 import com.alibaba.nacos.api.naming.listener.Event;
 import com.alibaba.nacos.api.naming.listener.EventListener;
 import com.alibaba.nacos.api.naming.listener.NamingEvent;
 import com.alibaba.nacos.api.naming.pojo.Instance;
-import com.alibaba.nacos.common.utils.JacksonUtils;
-import com.alibaba.nacos.test.base.Params;
-import com.fasterxml.jackson.databind.JsonNode;
-
+import com.alibaba.nacos.naming.NamingApp;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -40,6 +38,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import static com.alibaba.nacos.test.naming.NamingBase.*;
+
 /**
  * Created by wangtong.wt on 2018/6/20.
  *
@@ -47,8 +47,8 @@ import java.util.concurrent.TimeUnit;
  * @date 2018/6/20
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = Nacos.class, properties = {"server.servlet.context-path=/nacos"},
-        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(classes = NamingApp.class, properties = {"server.servlet.context-path=/nacos"},
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class Subscribe_ITCase extends RestAPI_ITCase {
 
     private NamingService naming;
@@ -227,9 +227,9 @@ public class Subscribe_ITCase extends RestAPI_ITCase {
             HttpMethod.GET);
         Assert.assertTrue(response.getStatusCode().is2xxSuccessful());
 
-        JsonNode body = JacksonUtils.toObj(response.getBody());
+        JSONObject body = JSON.parseObject(response.getBody());
 
-        Assert.assertEquals(1, body.get("subscribers").size());
+        Assert.assertEquals(1, body.getJSONArray("subscribers").size());
 
         NamingService naming2 = NamingFactory.createNamingService("127.0.0.1" + ":" + port);
 
@@ -254,9 +254,9 @@ public class Subscribe_ITCase extends RestAPI_ITCase {
             HttpMethod.GET);
         Assert.assertTrue(response.getStatusCode().is2xxSuccessful());
 
-        body = JacksonUtils.toObj(response.getBody());
+        body = JSON.parseObject(response.getBody());
 
-        Assert.assertEquals(2, body.get("subscribers").size());
+        Assert.assertEquals(2, body.getJSONArray("subscribers").size());
     }
 
 }

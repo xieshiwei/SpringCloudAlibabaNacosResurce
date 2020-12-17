@@ -1,5 +1,5 @@
 /*
- * Copyright 1999-2018 Alibaba Group Holding Ltd.
+ * Copyright (C) 2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,11 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.alibaba.nacos.address.component;
 
 import com.alibaba.nacos.address.constant.AddressServerConstants;
-import com.alibaba.nacos.naming.misc.UtilsAndCommons;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
@@ -30,51 +28,51 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class AddressServerManager {
-    
+
     public String getRawProductName(String name) {
-        
+
         if (StringUtils.isBlank(name) || AddressServerConstants.DEFAULT_PRODUCT.equals(name)) {
-            
+
             return AddressServerConstants.DEFAULT_PRODUCT;
         }
-        
+
         return name;
     }
-    
+
     /**
-     * If the name is empty then return the default {@link UtilsAndCommons#DEFAULT_CLUSTER_NAME}, or return the source
-     * name by input.
+     * <p>
+     * if the name is empty then return the default {@UtilAndCommons#DEFAULT_CLUSTER_NAME},
+     * <p>
+     * or return the source name by input
      *
-     * @param name name
-     * @return default cluster name
+     * @param name
+     * @return
      */
     public String getDefaultClusterNameIfEmpty(String name) {
-        
+
         if (StringUtils.isEmpty(name) || AddressServerConstants.DEFAULT_GET_CLUSTER.equals(name)) {
             return AddressServerConstants.DEFAULT_GET_CLUSTER;
         }
-        
+
         return name;
     }
-    
+
     public String getRawClusterName(String name) {
-        
+
         return getDefaultClusterNameIfEmpty(name);
     }
-    
+
     /**
-     * Split ips.
-     *
      * @param ips multi ip will separator by the ','
-     * @return array of ip
+     * @return
      */
     public String[] splitIps(String ips) {
-        
+
         if (StringUtils.isBlank(ips)) {
-            
+
             return new String[0];
         }
-        
+
         return ips.split(AddressServerConstants.MULTI_IPS_SEPARATOR);
     }
 }

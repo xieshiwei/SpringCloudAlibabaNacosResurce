@@ -13,110 +13,100 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.alibaba.nacos.client.config.http;
 
 import com.alibaba.nacos.api.exception.NacosException;
+import com.alibaba.nacos.client.config.impl.HttpSimpleClient.HttpResult;
 import com.alibaba.nacos.client.monitor.MetricsMonitor;
-import com.alibaba.nacos.common.http.HttpRestResult;
 import io.prometheus.client.Histogram;
 
 import java.io.IOException;
-import java.util.Map;
+import java.util.List;
 
 /**
- * MetricsHttpAgent.
+ * MetricsHttpAgent
  *
  * @author Nacos
  */
 public class MetricsHttpAgent implements HttpAgent {
-    
-    private final HttpAgent httpAgent;
-    
+    private HttpAgent httpAgent;
+
     public MetricsHttpAgent(HttpAgent httpAgent) {
         this.httpAgent = httpAgent;
     }
-    
+
     @Override
     public void start() throws NacosException {
         httpAgent.start();
     }
-    
+
     @Override
-    public HttpRestResult<String> httpGet(String path, Map<String, String> headers, Map<String, String> paramValues,
-            String encode, long readTimeoutMs) throws Exception {
+    public HttpResult httpGet(String path, List<String> headers, List<String> paramValues, String encoding, long readTimeoutMs) throws IOException {
         Histogram.Timer timer = MetricsMonitor.getConfigRequestMonitor("GET", path, "NA");
-        HttpRestResult<String> result;
+        HttpResult result = null;
         try {
-            result = httpAgent.httpGet(path, headers, paramValues, encode, readTimeoutMs);
+            result = httpAgent.httpGet(path, headers, paramValues, encoding, readTimeoutMs);
         } catch (IOException e) {
             throw e;
         } finally {
             timer.observeDuration();
             timer.close();
         }
-        
+
         return result;
     }
-    
+
     @Override
-    public HttpRestResult<String> httpPost(String path, Map<String, String> headers, Map<String, String> paramValues,
-            String encode, long readTimeoutMs) throws Exception {
+    public HttpResult httpPost(String path, List<String> headers, List<String> paramValues, String encoding, long readTimeoutMs) throws IOException {
         Histogram.Timer timer = MetricsMonitor.getConfigRequestMonitor("POST", path, "NA");
-        HttpRestResult<String> result;
+        HttpResult result = null;
         try {
-            result = httpAgent.httpPost(path, headers, paramValues, encode, readTimeoutMs);
+            result = httpAgent.httpPost(path, headers, paramValues, encoding, readTimeoutMs);
         } catch (IOException e) {
             throw e;
         } finally {
             timer.observeDuration();
             timer.close();
         }
-        
+
         return result;
     }
-    
+
     @Override
-    public HttpRestResult<String> httpDelete(String path, Map<String, String> headers, Map<String, String> paramValues,
-            String encode, long readTimeoutMs) throws Exception {
+    public HttpResult httpDelete(String path, List<String> headers, List<String> paramValues, String encoding, long readTimeoutMs) throws IOException {
         Histogram.Timer timer = MetricsMonitor.getConfigRequestMonitor("DELETE", path, "NA");
-        HttpRestResult<String> result;
+        HttpResult result = null;
         try {
-            result = httpAgent.httpDelete(path, headers, paramValues, encode, readTimeoutMs);
+            result = httpAgent.httpDelete(path, headers, paramValues, encoding, readTimeoutMs);
         } catch (IOException e) {
-            
+
             throw e;
         } finally {
             timer.observeDuration();
             timer.close();
         }
-        
+
         return result;
     }
-    
+
     @Override
     public String getName() {
         return httpAgent.getName();
     }
-    
+
     @Override
     public String getNamespace() {
         return httpAgent.getNamespace();
     }
-    
+
     @Override
     public String getTenant() {
         return httpAgent.getTenant();
     }
-    
+
     @Override
     public String getEncode() {
         return httpAgent.getEncode();
-    }
-    
-    @Override
-    public void shutdown() throws NacosException {
-        httpAgent.shutdown();
     }
 }
 

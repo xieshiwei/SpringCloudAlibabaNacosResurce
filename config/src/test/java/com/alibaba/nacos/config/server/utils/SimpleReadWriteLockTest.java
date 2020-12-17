@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.alibaba.nacos.config.server.utils;
 
 import org.junit.Test;
@@ -27,50 +26,50 @@ import static org.junit.Assert.assertTrue;
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
 public class SimpleReadWriteLockTest {
-    
+
     @Test
-    public void testDoubleReadLockByAllReleaseAndWriteLock() {
+    public void test_双重读锁_全部释放_加写锁() {
         SimpleReadWriteLock lock = new SimpleReadWriteLock();
         assertTrue(lock.tryReadLock());
         assertTrue(lock.tryReadLock());
-        
+
         lock.releaseReadLock();
         lock.releaseReadLock();
-        
+
         assertTrue(lock.tryWriteLock());
     }
-    
+
     @Test
-    public void testAddWriteLock() {
+    public void test_加写锁() {
         SimpleReadWriteLock lock = new SimpleReadWriteLock();
         assertTrue(lock.tryWriteLock());
         lock.releaseWriteLock();
     }
-    
+
     @Test
-    public void testDoubleWriteLock() {
+    public void test_双重写锁() {
         SimpleReadWriteLock lock = new SimpleReadWriteLock();
-        
+
         assertTrue(lock.tryWriteLock());
         assertFalse(lock.tryWriteLock());
     }
-    
+
     @Test
-    public void testFirstReadLockThenWriteLock() {
+    public void test_先读锁后写锁() {
         SimpleReadWriteLock lock = new SimpleReadWriteLock();
-        
+
         assertTrue(lock.tryReadLock());
         assertFalse(lock.tryWriteLock());
     }
-    
+
     @Test
-    public void testDoubleReadLockAndOneReleaseOneFailed() {
+    public void test_双重读锁_释放一个_加写锁失败() {
         SimpleReadWriteLock lock = new SimpleReadWriteLock();
         assertTrue(lock.tryReadLock());
         assertTrue(lock.tryReadLock());
-        
+
         lock.releaseReadLock();
-        
+
         assertFalse(lock.tryWriteLock());
     }
 }

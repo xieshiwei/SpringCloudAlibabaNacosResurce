@@ -13,16 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.alibaba.nacos.client.config.impl;
 
 import com.alibaba.nacos.api.common.Constants;
 import com.alibaba.nacos.client.config.utils.ConcurrentDiskUtil;
-import com.alibaba.nacos.client.config.utils.JvmUtil;
+import com.alibaba.nacos.client.config.utils.IOUtils;
+import com.alibaba.nacos.client.config.utils.JVMUtil;
 import com.alibaba.nacos.client.config.utils.SnapShotSwitch;
 import com.alibaba.nacos.client.utils.LogUtils;
-import com.alibaba.nacos.common.utils.IoUtils;
-import com.alibaba.nacos.common.utils.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 
 import java.io.File;
@@ -31,20 +30,20 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * Local Disaster Recovery Directory Tool.
+ * Local Disaster Recovery Directory Tool
  *
  * @author Nacos
  */
 public class LocalConfigInfoProcessor {
-    
+
     private static final Logger LOGGER = LogUtils.logger(LocalConfigInfoProcessor.class);
-    
-    public static String getFailover(String serverName, String dataId, String group, String tenant) {
+
+    static public String getFailover(String serverName, String dataId, String group, String tenant) {
         File localPath = getFailoverFile(serverName, dataId, group, tenant);
         if (!localPath.exists() || !localPath.isFile()) {
             return null;
         }
-        
+
         try {
             return readFile(localPath);
         } catch (IOException ioe) {
@@ -52,11 +51,11 @@ public class LocalConfigInfoProcessor {
             return null;
         }
     }
-    
+
     /**
-     * 获取本地缓存文件内容。NULL表示没有本地文件或抛出异常.
+     * 获取本地缓存文件内容。NULL表示没有本地文件或抛出异常。
      */
-    public static String getSnapshot(String name, String dataId, String group, String tenant) {
+    static public String getSnapshot(String name, String dataId, String group, String tenant) {
         if (!SnapShotSwitch.getIsSnapShot()) {
             return null;
         }
@@ -64,7 +63,7 @@ public class LocalConfigInfoProcessor {
         if (!file.exists() || !file.isFile()) {
             return null;
         }
-        
+
         try {
             return readFile(file);
         } catch (IOException ioe) {
@@ -72,47 +71,38 @@ public class LocalConfigInfoProcessor {
             return null;
         }
     }
-    
-    private static String readFile(File file) throws IOException {
+
+    static private String readFile(File file) throws IOException {
         if (!file.exists() || !file.isFile()) {
             return null;
         }
-        
-        if (JvmUtil.isMultiInstance()) {
+
+        if (JVMUtil.isMultiInstance()) {
             return ConcurrentDiskUtil.getFileContent(file, Constants.ENCODE);
         } else {
             InputStream is = null;
             try {
                 is = new FileInputStream(file);
-                return IoUtils.toString(is, Constants.ENCODE);
+                return IOUtils.toString(is, Constants.ENCODE);
             } finally {
                 try {
                     if (null != is) {
                         is.close();
                     }
-                } catch (IOException ignored) {
+                } catch (IOException ioe) {
                 }
             }
         }
     }
-    
-    /**
-     * Save snapshot.
-     *
-     * @param envName env name
-     * @param dataId  data id
-     * @param group   group
-     * @param tenant  tenant
-     * @param config  config
-     */
-    public static void saveSnapshot(String envName, String dataId, String group, String tenant, String config) {
+
+    static public void saveSnapshot(String envName, String dataId, String group, String tenant, String config) {
         if (!SnapShotSwitch.getIsSnapShot()) {
             return;
         }
         File file = getSnapshotFile(envName, dataId, group, tenant);
         if (null == config) {
             try {
-                IoUtils.delete(file);
+                IOUtils.delete(file);
             } catch (IOException ioe) {
                 LOGGER.error("[" + envName + "] delete snapshot error, " + file, ioe);
             }
@@ -125,22 +115,23 @@ public class LocalConfigInfoProcessor {
                         LOGGER.error("[{}] save snapshot error", envName);
                     }
                 }
-                
-                if (JvmUtil.isMultiInstance()) {
-                    ConcurrentDiskUtil.writeFileContent(file, config, Constants.ENCODE);
+
+                if (JVMUtil.isMultiInstance()) {
+                    ConcurrentDiskUtil.writeFileContent(file, config,
+                        Constants.ENCODE);
                 } else {
-                    IoUtils.writeStringToFile(file, config, Constants.ENCODE);
+                    IOUtils.writeStringToFile(file, config, Constants.ENCODE);
                 }
             } catch (IOException ioe) {
                 LOGGER.error("[" + envName + "] save snapshot error, " + file, ioe);
             }
         }
     }
-    
+
     /**
-     * 清除snapshot目录下所有缓存文件.
+     * 清除snapshot目录下所有缓存文件。
      */
-    public static void cleanAllSnapshot() {
+    static public void cleanAllSnapshot() {
         try {
             File rootFile = new File(LOCAL_SNAPSHOT_PATH);
             File[] files = rootFile.listFiles();
@@ -149,31 +140,26 @@ public class LocalConfigInfoProcessor {
             }
             for (File file : files) {
                 if (file.getName().endsWith("_nacos")) {
-                    IoUtils.cleanDirectory(file);
+                    IOUtils.cleanDirectory(file);
                 }
             }
         } catch (IOException ioe) {
             LOGGER.error("clean all snapshot error, " + ioe.toString(), ioe);
         }
     }
-    
-    /**
-     * Clean snapshot.
-     *
-     * @param envName env name
-     */
-    public static void cleanEnvSnapshot(String envName) {
+
+    static public void cleanEnvSnapshot(String envName) {
         File tmp = new File(LOCAL_SNAPSHOT_PATH, envName + "_nacos");
         tmp = new File(tmp, "snapshot");
         try {
-            IoUtils.cleanDirectory(tmp);
+            IOUtils.cleanDirectory(tmp);
             LOGGER.info("success delete " + envName + "-snapshot");
         } catch (IOException e) {
             LOGGER.info("fail delete " + envName + "-snapshot, " + e.toString());
             e.printStackTrace();
         }
     }
-    
+
     static File getFailoverFile(String serverName, String dataId, String group, String tenant) {
         File tmp = new File(LOCAL_SNAPSHOT_PATH, serverName + "_nacos");
         tmp = new File(tmp, "data");
@@ -185,7 +171,7 @@ public class LocalConfigInfoProcessor {
         }
         return new File(new File(tmp, group), dataId);
     }
-    
+
     static File getSnapshotFile(String envName, String dataId, String group, String tenant) {
         File tmp = new File(LOCAL_SNAPSHOT_PATH, envName + "_nacos");
         if (StringUtils.isBlank(tenant)) {
@@ -194,22 +180,19 @@ public class LocalConfigInfoProcessor {
             tmp = new File(tmp, "snapshot-tenant");
             tmp = new File(tmp, tenant);
         }
-        
+
         return new File(new File(tmp, group), dataId);
     }
-    
+
     public static final String LOCAL_FILEROOT_PATH;
-    
     public static final String LOCAL_SNAPSHOT_PATH;
-    
+
     static {
-        LOCAL_FILEROOT_PATH =
-                System.getProperty("JM.LOG.PATH", System.getProperty("user.home")) + File.separator + "nacos"
-                        + File.separator + "config";
-        LOCAL_SNAPSHOT_PATH =
-                System.getProperty("JM.SNAPSHOT.PATH", System.getProperty("user.home")) + File.separator + "nacos"
-                        + File.separator + "config";
+        LOCAL_FILEROOT_PATH = System.getProperty("JM.LOG.PATH", System.getProperty("user.home")) + File.separator
+            + "nacos" + File.separator + "config";
+        LOCAL_SNAPSHOT_PATH = System.getProperty("JM.SNAPSHOT.PATH", System.getProperty("user.home")) + File.separator
+            + "nacos" + File.separator + "config";
         LOGGER.info("LOCAL_SNAPSHOT_PATH:{}", LOCAL_SNAPSHOT_PATH);
     }
-    
+
 }

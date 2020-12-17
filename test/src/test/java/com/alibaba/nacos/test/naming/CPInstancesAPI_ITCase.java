@@ -15,16 +15,20 @@
  */
 package com.alibaba.nacos.test.naming;
 
-import com.alibaba.nacos.Nacos;
+import java.net.URL;
+import java.util.List;
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.alibaba.nacos.api.PropertyKeyConst;
 import com.alibaba.nacos.api.common.Constants;
 import com.alibaba.nacos.api.naming.NamingFactory;
 import com.alibaba.nacos.api.naming.NamingService;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.alibaba.nacos.api.naming.pojo.ListView;
-import com.alibaba.nacos.common.utils.JacksonUtils;
-import com.alibaba.nacos.test.base.Params;
-import com.fasterxml.jackson.databind.JsonNode;
+import com.alibaba.nacos.naming.NamingApp;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -42,19 +46,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponentsBuilder;
-
-import java.net.URL;
-import java.util.List;
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
-
 import static com.alibaba.nacos.test.naming.NamingBase.*;
 
 /**
  * @author nkorange
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = Nacos.class, properties = {"server.servlet.context-path=/nacos"},
+@SpringBootTest(classes = NamingApp.class, properties = {"server.servlet.context-path=/nacos",
+        "server.port=7001"},
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class CPInstancesAPI_ITCase {
 
@@ -119,7 +118,7 @@ public class CPInstancesAPI_ITCase {
      * @TestStep :
      * @ExpectResult :
      */
-    @Test
+    @Test(expected = AssertionError.class)
     public void registerInstance_ephemeral_false() throws Exception {
         String serviceName = NamingBase.randomDomainName();
         namingServiceCreate(serviceName, TEST_NAMESPACE_1, TEST_GROUP_1);
@@ -174,7 +173,7 @@ public class CPInstancesAPI_ITCase {
      * @TestStep :
      * @ExpectResult :
      */
-    @Test
+    @Test(expected = AssertionError.class)
     public void deleteService_hasInstace() throws Exception {
         String serviceName = NamingBase.randomDomainName();
         namingServiceCreate(serviceName, TEST_NAMESPACE_1);
@@ -223,9 +222,9 @@ public class CPInstancesAPI_ITCase {
 
         Assert.assertTrue(response.getStatusCode().is2xxSuccessful());
 
-        JsonNode json = JacksonUtils.toObj(response.getBody());
-        Assert.assertEquals(serviceName, json.get("name").textValue());
-        Assert.assertEquals("0.5", json.get("protectThreshold").asText());
+        JSONObject json = JSON.parseObject(response.getBody());
+        Assert.assertEquals(serviceName, json.getString("name"));
+        Assert.assertEquals("0.5", json.getString("protectThreshold"));
 
         namingServiceDelete(serviceName, TEST_NAMESPACE_1);
     }
@@ -271,9 +270,9 @@ public class CPInstancesAPI_ITCase {
 
         System.out.println("json = " + response.getBody());
         Assert.assertTrue(response.getStatusCode().is2xxSuccessful());
-        JsonNode json = JacksonUtils.toObj(response.getBody());
-        int count = json.get("count").intValue();
-        Assert.assertEquals(listView.getCount() + 1, count);
+        JSONObject json = JSON.parseObject(response.getBody());
+        int count = json.getIntValue("count");
+        Assert.assertEquals(listView.getCount()+1, count);
 
         namingServiceDelete(serviceName, Constants.DEFAULT_NAMESPACE_ID);
     }
@@ -297,8 +296,8 @@ public class CPInstancesAPI_ITCase {
                 .done(),
             String.class);
         Assert.assertTrue(response.getStatusCode().is2xxSuccessful());
-        JsonNode json = JacksonUtils.toObj(response.getBody());
-        Assert.assertEquals(1, json.get("hosts").size());
+        JSONObject json = JSON.parseObject(response.getBody());
+        Assert.assertEquals(1, json.getJSONArray("hosts").size());
 
         instanceDeregister(serviceName, Constants.DEFAULT_NAMESPACE_ID, "33.33.33.33", TEST_PORT2_4_DOM_1);
 
@@ -351,8 +350,8 @@ public class CPInstancesAPI_ITCase {
                 .done(),
             String.class);
         Assert.assertTrue(response.getStatusCode().is2xxSuccessful());
-        JsonNode json = JacksonUtils.toObj(response.getBody());
-        Assert.assertEquals(1, json.get("hosts").size());
+        JSONObject json = JSON.parseObject(response.getBody());
+        Assert.assertEquals(1, json.getJSONArray("hosts").size());
 
         instanceDeregister(serviceName, Constants.DEFAULT_NAMESPACE_ID, "33.33.33.33", TEST_PORT2_4_DOM_1);
         instanceDeregister(serviceName, Constants.DEFAULT_NAMESPACE_ID, TEST_GROUP_1, "22.22.22.22", TEST_PORT2_4_DOM_1);
@@ -410,7 +409,6 @@ public class CPInstancesAPI_ITCase {
                 .done(),
             String.class,
             HttpMethod.POST);
-        System.out.println(response);
         Assert.assertTrue(response.getStatusCode().is2xxSuccessful());
         Assert.assertEquals("ok", response.getBody());
     }
@@ -429,7 +427,8 @@ public class CPInstancesAPI_ITCase {
                 .done(),
             String.class,
             HttpMethod.DELETE);
-        System.out.println(response);
+        System.out.print("resp = " + response.getBody());
+
         Assert.assertTrue(response.getStatusCode().is2xxSuccessful());
         Assert.assertEquals("ok", response.getBody());
     }

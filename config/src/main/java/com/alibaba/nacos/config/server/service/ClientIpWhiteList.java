@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.alibaba.nacos.config.server.service;
 
-import com.alibaba.nacos.common.utils.JacksonUtils;
-import com.alibaba.nacos.config.server.model.AclInfo;
+import com.alibaba.nacos.config.server.model.ACLInfo;
+import com.alibaba.nacos.config.server.utils.JSONUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -25,69 +24,65 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static com.alibaba.nacos.config.server.utils.LogUtil.DEFAULT_LOG;
+import static com.alibaba.nacos.config.server.utils.LogUtil.defaultLog;
 
 /**
- * Client ip whitelist.
+ * Client ip whitelist
  *
  * @author Nacos
  */
 @Service
 public class ClientIpWhiteList {
-    
+
     /**
-     * Judge whether specified client ip includes in the whitelist.
-     *
-     * @param clientIp clientIp string value.
-     * @return Judge result.
+     * 判断指定的ip在白名单中
      */
-    public static boolean isLegalClient(String clientIp) {
+    static public boolean isLegalClient(String clientIp) {
         if (StringUtils.isBlank(clientIp)) {
-            throw new IllegalArgumentException("clientIp is empty");
+            throw new IllegalArgumentException();
         }
         clientIp = clientIp.trim();
-        
         if (CLIENT_IP_WHITELIST.get().contains(clientIp)) {
             return true;
         }
         return false;
     }
-    
+
     /**
-     * Whether start client ip whitelist.
+     * whether start client ip whitelist
      *
      * @return true: enable ; false disable
      */
-    public static boolean isEnableWhitelist() {
+    static public boolean isEnableWhitelist() {
         return isOpen;
     }
-    
+
     /**
-     * Load white lists based content parameter value.
-     *
-     * @param content content string value.
+     * 传入内容，重新加载客户端ip白名单
      */
-    public static void load(String content) {
+    static public void load(String content) {
         if (StringUtils.isBlank(content)) {
-            DEFAULT_LOG.warn("clientIpWhiteList is blank.close whitelist.");
+            defaultLog.warn("clientIpWhiteList is blank.close whitelist.");
             isOpen = false;
             CLIENT_IP_WHITELIST.get().clear();
             return;
         }
-        DEFAULT_LOG.warn("[clientIpWhiteList] {}", content);
+        defaultLog.warn("[clientIpWhiteList] {}", content);
         try {
-            AclInfo acl = JacksonUtils.toObj(content, AclInfo.class);
+            ACLInfo acl = (ACLInfo)JSONUtils.deserializeObject(content, ACLInfo.class);
             isOpen = acl.getIsOpen();
             CLIENT_IP_WHITELIST.set(acl.getIps());
         } catch (Exception ioe) {
-            DEFAULT_LOG.error("failed to load clientIpWhiteList, " + ioe.toString(), ioe);
+            defaultLog.error(
+                "failed to load clientIpWhiteList, " + ioe.toString(), ioe);
         }
     }
-    
-    public static final String CLIENT_IP_WHITELIST_METADATA = "com.alibaba.nacos.metadata.clientIpWhitelist";
-    
-    private static final AtomicReference<List<String>> CLIENT_IP_WHITELIST = new AtomicReference<List<String>>(
-            new ArrayList<String>());
-    
-    private static Boolean isOpen = false;
+
+    // =======================
+
+    static public final String CLIENT_IP_WHITELIST_METADATA = "com.alibaba.nacos.metadata.clientIpWhitelist";
+
+    static final AtomicReference<List<String>> CLIENT_IP_WHITELIST = new AtomicReference<List<String>>(
+        new ArrayList<String>());
+    static Boolean isOpen = false;
 }

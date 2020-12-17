@@ -37,5 +37,6 @@ public class nacosSmoke_ITCase {
 
     @Test
     public void testSmoke() {
+        logger.info("nacosSmoke_ITCase :testSmoke");
     }
 }
